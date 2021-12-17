@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <%- include("../fragmente/head.ejs") %>
+        <title>Log In</title>
+</head>
+
+<body>
+    <form id="form_login" method="GET" onsubmit="submit1(); return false;">
+        <label>
+            Username: <input type="text" name="userName" value="" required>
+        </label>
+        <p></p>
+        <label>
+            Parola: <input type="password" name="userPassword" value="" required>
+        </label>
+        <p></p>
+        <p>
+            <input type="submit" value="Trimite">
+            <input type="reset" value="Reseteaza">
+        </p>
+    </form>
+
+    <script>
+        async function submit1() {
+            const userPassword = document.getElementsByName('userPassword')[0].value;
+            const userName = document.getElementsByName('userName')[0].value;
+            if (!userPassword || !userName) {
+                alert('Form isn\'t completed.');
+            } else {
+                try {
+                    const body = Object.assign({ userPassword, userName });
+                    console.log(JSON.stringify(body));
+                    const result = await fetch('api/v1/login', {
+                        method: "POST",
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    })
+                    try {
+                        const json = await result.json();
+                        if (json.token) {
+                            window.location.replace('/')
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                    catch (error) {
+                        alert(error)
+                    }
+                }
+                catch (error) {
+                    alert(error);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

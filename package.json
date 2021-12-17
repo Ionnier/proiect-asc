@@ -1,0 +1,26 @@
+{
+  "name": "videointerfon",
+  "version": "1.0.0",
+  "description": "Proiectul constituie in studierea posibilitatii crearii unui videointerfon folosind un Raspberry Pi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^10.0.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "formidable": "^2.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "multer": "^1.4.4",
+    "node-webcam": "^0.8.0",
+    "nodemailer": "^6.7.2",
+    "onoff": "^6.0.3",
+    "peer": "^0.6.1",
+    "socket.io": "^4.4.0"
+  }
+}

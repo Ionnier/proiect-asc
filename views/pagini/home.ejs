@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <%- include("../fragmente/head.ejs") %>
+        <title>Home</title>
+        <script src="/resources/peerjs.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <img id="camimage" src="/resources/img/latest_shot.jpg" alt="picture">
+    <p></p>
+    <input type="button" name="allow" value="Refresh Picture" onclick="refreshPicture();">
+    <p></p>
+    <p>Gate is <%- gate%>
+    </p>
+    <input type="button" name="allow" value="Switch Gate" onclick="unlockGate();">
+    <p></p>
+    <a href="/signup">Create User</a>
+    <p></p>
+    <input type="button" name="logout" value="Log Out" onclick="logout();">
+    <p></p>
+    <input type="button" name="disc" value="Disconnect RPI Video" onclick="disconnect();">
+    <p></p>
+
+    <div id="videoDiv">
+    </div>
+
+
+
+
+</body>
+
+<script>
+    async function refreshPicture() {
+        try {
+            const result = await fetch('/api/v1/takepicture', {
+                method: "GET",
+            })
+            try {
+                const json = await result.json();
+                if (json.status == true) {
+                    document.getElementById('camimage').src = "/resources/img/latest_shot.jpg?" + new Date().getTime();
+                } else {
+                    document.getElementById('camimage').src = "/resources/img/latest_shot.jpg?" + new Date().getTime();
+                    alert("Eroare");
+                }
+            }
+            catch (error) {
+                document.getElementById('camimage').src = "/resources/img/latest_shot.jpg?" + new Date().getTime();
+                alert(error)
+            }
+        }
+        catch (error) {
+            alert(error);
+        }
+
+    }
+    async function unlockGate() {
+        try {
+            const result = await fetch('/api/v1/switchgate', {
+                method: "GET",
+            })
+            try {
+                const json = await result.json();
+                console.log(json)
+                if (json.status == "success") {
+                    window.location.replace('/')
+                }
+            }
+            catch (error) {
+                alert(error)
+            }
+        }
+        catch (error) {
+            alert(error);
+        }
+    }
+    async function logout() {
+        try {
+            const result = await fetch('/api/v1/logout', {
+                method: "GET",
+            })
+            try {
+                const json = await result.json();
+                if (json.status == "success") {
+                    window.location.replace('/')
+                }
+            }
+            catch (error) {
+                alert(error)
+            }
+        }
+        catch (error) {
+            alert(error);
+        }
+    }
+    async function disconnect() {
+        try {
+            const result = await fetch('/api/v1/disconnect', {
+                method: "GET",
+            })
+            try {
+                const json = await result.json();
+                if (json.status == "success") {
+                    window.location.replace('/')
+                }
+            }
+            catch (error) {
+                alert(error)
+            }
+        }
+        catch (error) {
+            alert(error);
+        }
+    }
+
+    const socket = io('/');
+    const peer = new Peer();
+    let myVideoStream;
+    let myId;
+    var videoGrid = document.getElementById('videoDiv')
+    var myvideo = document.createElement('video');
+    myvideo.muted = true;
+    const peerConnections = {}
+    navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+    }).then((stream) => {
+        myVideoStream = stream;
+        addVideo(myvideo, stream);
+        peer.on('call', call => {
+            call.answer(stream);
+            const vid = document.createElement('video');
+            call.on('stream', userStream => {
+                addVideo(vid, userStream);
+            })
+            call.on('error', (err) => {
+                alert(err)
+            })
+            call.on("close", () => {
+                console.log(vid);
+                vid.remove();
+            })
+            peerConnections[call.peer] = call;
+        })
+    }).catch(err => {
+        alert(err.message)
+    })
+    peer.on('open', (id) => {
+        myId = id;
+        socket.emit("user", id, "asd");
+    })
+    peer.on('error', (err) => {
+        alert(err.type);
+    });
+    socket.on('userJoined', id => {
+        console.log("new user joined")
+        const call = peer.call(id, myVideoStream);
+        const vid = document.createElement('video');
+        call.on('error', (err) => {
+            alert(err);
+        })
+        call.on('stream', userStream => {
+            addVideo(vid, userStream);
+        })
+        call.on('close', () => {
+            vid.remove();
+            console.log("user disconect")
+        })
+        peerConnections[id] = call;
+    })
+    socket.on('userDisconnect', id => {
+        if (peerConnections[id]) {
+            peerConnections[id].close();
+        }
+    })
+    function addVideo(video, stream) {
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => {
+            video.play()
+        })
+        videoGrid.append(video);
+    }
+
+
+</script>
+
+</html>
