@@ -117,6 +117,7 @@ var GATE = "CLOSED";
 function close_gate() {
     if (typeof Gpio !== 'undefined') {
         doorlock.writeSync(0);
+        exec("killall -9 firefox")
         GATE = "CLOSED";
     } else {
         GATE = "CLOSED";
@@ -126,6 +127,7 @@ function close_gate() {
 function open_gate() {
     if (typeof Gpio !== 'undefined') {
         doorlock.writeSync(1);
+        exec("killall -9 firefox")
         GATE = "OPEN";
     } else {
         GATE = "OPEN";
