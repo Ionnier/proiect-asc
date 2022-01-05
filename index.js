@@ -6,8 +6,14 @@ const NodeWebcam = require("node-webcam");
 const path = require('path')
 const nodemailer = require('nodemailer')
 const app = express()
+var https_options = {
+    key: fs.readFileSync(path.join(__dirname, "ssl_certificates", "ionnier.test.key")),
+    cert: fs.readFileSync(path.join(__dirname, "ssl_certificates", "ionnier.test.crt")),
+};
 const server = require('http').Server(app);
+const server_https = require('https').Server(https_options, app);
 const io = require('socket.io')(server);
+const io_https = require('socket.io')(server_https);
 const { ExpressPeerServer } = require('peer')
 const peer = ExpressPeerServer(server, {
     debug: true
@@ -193,12 +199,25 @@ io.on("connection", (socket) => {
             socket.broadcast.emit('userDisconnect', id);
         })
     })
+})
 
+io_https.on("connection", (socket) => {
+    socket.on('newUser', (id, room) => {
+        socket.join(room);
+        socket.broadcast.emit('userJoined', id);
+        socket.on('disconnect', () => {
+            socket.broadcast.emit('userDisconnect', id);
+        })
+    })
 })
 
 
 server.listen(port, host, () => {
     console.log(`Listening on port ${port} via ${host}...`)
+})
+
+server_https.listen(port + 1, host, () => {
+    console.log(`Listening on port ${port + 1} via https://${host}...`)
 })
 
 if (typeof Gpio !== 'undefined') {

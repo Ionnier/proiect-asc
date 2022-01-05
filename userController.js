@@ -10,7 +10,6 @@ function generate_salt() { // genereaza salt-ul pentru criptarea parolelor
 }
 
 function hash(string, salt) { // hasheaza un string combinat cu un salt folosit pentru evitarea stocarii in plain text a parolelor
-    crypto.createHm
     return crypto.createHmac("sha256", salt).update(string).digest('hex');
 }
 

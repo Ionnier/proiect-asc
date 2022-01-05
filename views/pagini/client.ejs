@@ -14,6 +14,7 @@
 </body>
 
 <script>
+    let users_joined = 0;
     const socket = io('/');
     const peer = new Peer();
     let myVideoStream;
@@ -55,6 +56,7 @@
     });
     socket.on('userJoined', id => {
         console.log("new user joined")
+        users_joined += 1
         const call = peer.call(id, myVideoStream);
         const vid = document.createElement('video');
         call.on('error', (err) => {
@@ -70,6 +72,7 @@
         peerConnections[id] = call;
     })
     socket.on('userDisconnect', id => {
+        users_joined = users_joined - 1
         if (peerConnections[id]) {
             peerConnections[id].close();
         }
@@ -81,8 +84,12 @@
         })
         videoGrid.append(video);
     }
-
-
+    function handler() {
+        if (document.getElementsByTagName("video").length == 1) {
+            window.location.reload();
+        }
+    }
+    setInterval(handler, 30000)
 </script>
 
 </html>
